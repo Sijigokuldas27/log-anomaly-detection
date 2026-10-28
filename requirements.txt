@@ -1,0 +1,12 @@
+pandas==2.2.3
+numpy==2.5.4
+scikit-learn==1.9.1
+torch==2.14.0
+drain3==0.9.11
+matplotlib
+requests
+
+# pandas is fixed to 2.2.3 because newer one was blocked by windows smart app control on my laptop
+# for torch i used the cpu version:
+# pip install torch --index-url https://download.pytorch.org/whl/cpu
+# requests is for talking to ollama (llm part), matplotlib is for the plots

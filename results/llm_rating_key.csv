@@ -1,0 +1,31 @@
+id,A_is,notes_found
+1,no_rag,# write pipeline failure | # normal block write | # block verification and reads
+2,rag,# normal block write | # block verification and reads | # write pipeline failure
+3,rag,# normal block write | # normal block delete | # block verification and reads
+4,rag,# normal block write | # write pipeline failure | # block verification and reads
+5,no_rag,# normal block write | # block verification and reads | # normal block delete
+6,no_rag,# normal block write | # block verification and reads | # redundant or late block report
+7,no_rag,# normal block write | # normal block delete | # block verification and reads
+8,no_rag,"# normal block delete | # normal block write | # delete error, block not found in volumeMap"
+9,rag,# normal block write | # normal block delete | # redundant or late block report
+10,rag,# normal block write | # normal block delete | # block verification and reads
+11,rag,# write pipeline failure | # normal block write | # error while serving block to client
+12,rag,# normal block write | # replication transfer failed | # block verification and reads
+13,rag,"# normal block write | # normal block delete | # delete error, block not found in volumeMap"
+14,rag,# normal block write | # normal block delete | # write pipeline failure
+15,rag,# normal block write | # redundant or late block report | # block stops early or missing steps
+16,rag,# normal block write | # write pipeline failure | # block verification and reads
+17,no_rag,# normal block write | # normal block delete | # redundant or late block report
+18,no_rag,# normal block write | # redundant or late block report | # normal block delete
+19,no_rag,# normal block write | # normal block delete | # block verification and reads
+20,rag,"# normal block write | # normal block delete | # delete error, block not found in volumeMap"
+21,rag,# normal block write | # block verification and reads | # replication transfer failed
+22,no_rag,# normal block write | # redundant or late block report | # normal block delete
+23,no_rag,# normal block write | # write pipeline failure | # block verification and reads
+24,no_rag,# normal block write | # normal block delete | # block verification and reads
+25,rag,# normal block write | # replication transfer failed | # normal block delete
+26,rag,# normal block write | # replication transfer failed | # normal block delete
+27,no_rag,# normal block write | # replication transfer failed | # block verification and reads
+28,no_rag,"# normal block write | # normal block delete | # delete error, block not found in volumeMap"
+29,no_rag,# normal block write | # replication transfer failed | # normal block delete
+30,rag,"# normal block write | # replication transfer failed | # block under-replicated, ask to replicate"

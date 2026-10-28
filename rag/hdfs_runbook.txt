@@ -1,0 +1,55 @@
+# normal block write
+Receiving block, Received block of size, PacketResponder terminating, NameSystem.allocateBlock, addStoredBlock blockMap updated
+This is the normal life of a block. NameNode allocates the block, the client writes it through a pipeline of datanodes (usually 3), each datanode receives it and the PacketResponder finishes, then NameNode records each copy with addStoredBlock. Normally there are 3 of each step. Not a problem by itself.
+
+# normal block delete
+NameSystem.delete is added to invalidSet, Deleting block file
+When a file is deleted, NameNode puts its blocks in the invalidSet of each datanode that has a copy, and later each datanode deletes the block file. Normally one delete line per copy. Not a problem by itself.
+
+# delete error, block not found in volumeMap
+Unexpected error trying to delete block BlockInfo not found in volumeMap
+A datanode was asked to delete a block copy but it does not have it in its volumeMap. Common reasons: the copy was already deleted before (delete request came twice), or the copy was never fully written to that datanode. If the other copies were deleted fine, impact is usually low because the block was being removed anyway. Check: was the same block deleted twice, did the earlier write to this datanode fail, and is the datanode disk (volume) ok.
+
+# error while serving block to client
+Got exception while serving to
+A datanode failed while sending a block to a reader. Often the client closed the connection early or there was a network problem. One time is usually low. If it repeats for many blocks or one datanode, check the network and that datanode.
+
+# write pipeline failure
+writeBlock received exception, Exception in receiveBlock for block, Exception writing block to mirror, Receiving empty packet for block
+Writing the block through the datanode pipeline failed on one datanode, for example network timeout, disk problem or the next datanode in the pipeline went down. The client normally retries with other datanodes, so the block may still end with enough copies. Severity medium. Check the datanode logs and disk, the network between datanodes, and count addStoredBlock lines to see if the block got all its copies.
+
+# packet responder problem
+PacketResponder Interrupted, PacketResponder Exception
+The acknowledgement part of the write pipeline stopped. Usually it comes together with a write failure or the client stopping the write. Severity medium. Check the same things as write pipeline failure.
+
+# replication transfer failed
+Failed to transfer to got java.io.IOException, Starting thread to transfer block, Transmitted block
+Datanodes copy blocks to each other when a block needs more copies. Failed to transfer means the copy to the target datanode did not finish, so the block can stay under-replicated (fewer copies than wanted). Severity medium to high if it stays like that. Check the target datanode health and network, and if replication was tried again.
+
+# block under-replicated, ask to replicate
+ask to replicate to
+NameNode found that the block has fewer copies than wanted, often because a datanode died or lost its disk, and asks a datanode to copy it. The question is why the copies were lost. Check for dead datanodes and disk failures around this time.
+
+# replication timed out
+PendingReplicationMonitor timed out block
+A replication that NameNode asked for did not finish in time. The block may still be under-replicated. Severity high if it repeats, because there is risk of data loss. Check datanode health, network and replication load.
+
+# redundant or late block report
+Redundant addStoredBlock request received, addStoredBlock request received but it does not belong to any file, Removing block from neededReplications as it does not belong to any file
+NameNode got a report for a copy it already knows (redundant), or for a block whose file is already deleted. Usually it means a retry or the file was deleted while copies were still being written or replicated. Mostly low impact, the leftover copy will be cleaned. Check if the file was deleted during writing.
+
+# duplicate block on datanode
+Adding an already existing block
+A datanode got a block that it already has, so the write or replication happened twice. Usually low, can be a sign of retries after an earlier failure.
+
+# block verification and reads
+Verification succeeded for, Served block to
+The block scanner checked the block and it was fine, or the block was read by a client. These are normal.
+
+# block reopen or append
+Changing block file offset, Reopen Block
+The block was opened again, for example for append or recovery after a failed write. Rare in this data. If it comes with errors, the client was trying to recover a failed write.
+
+# block stops early or missing steps
+missing addStoredBlock, missing PacketResponder, sequence ends early
+If a block was allocated and received but some normal steps are missing (for example fewer than 3 addStoredBlock), the write may not have finished on all datanodes. It can also be a block that was still being written when the log ended. Check if the file was completed and how many copies the block has now.

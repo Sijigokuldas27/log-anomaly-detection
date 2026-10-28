@@ -1,0 +1,123 @@
+log anomaly project notes
+
+data
+hdfs and bgl from loghub (zenodo)
+hdfs: 11,175,629 lines, 575,061 blocks, 46 templates, 2.93% anomaly
+hdfs labels come from anomaly_label.csv (one label per block)
+bgl: 4,713,493 lines, 348,460 alert lines, 1127 templates
+bgl first column is "-" for normal line, else alert name
+bgl has no block id, so cut in windows of 100 lines -> 47,135 windows, 10.24% anomaly
+window is anomaly if even 1 line inside is alert
+last bgl window only 93 lines, ok
+bgl has too many templates (1127 vs 46), maybe same msg split in diff templates
+bcoz node names / paths not masked. check later
+
+parsing
+drain3, sim_th 0.5, depth 4
+hdfs masking: block id, ip, numbers
+bgl masking: hex, ip, numbers
+some hdfs lines have more than 1 block (delete requests), added to all
+time = date+time joined as one number, only used for sorting
+
+split
+train 70 / val 10 / test 20, all by time, not random (Le and Zhang paper)
+first i picked top k and threshold after seeing test, not fair
+now pick on val, test only once at end
+hdfs: train 402,542, val 57,506 (2044 anomaly), test 115,013 (1679 anomaly)
+bgl: train 32,994, val 4,714 (713 anomaly), test 9,427 (816 anomaly)
+models train only on normal data, labels only for val and test
+each model runs 3 times (seed 42, 7, 123)
+
+isolation forest
+100 trees, features: counts / binary / ratio, threshold 1 / 5 / 10% of train scores
+hdfs counts very bad f1 0.014 ??
+test blocks shorter 15.4 vs 20.5 events (analysis/hdfs_block_length_check.py)
+ratio features fixed it
+hdfs: f1 0.477 +- 0.000, auc 0.868 (val also picked ratio)
+around 2676 false alarms on hdfs test, comes in every setting
+hdfs all data: f1 0.521, auc 0.943, but val f1 was 0.971, big gap
+bgl: f1 0.198 +- 0.007, auc 0.460 (first number 0.222 was too high, picked on test)
+bgl all data: f1 0.202, auc 0.493
+bgl bad bcoz error templates always 0 in normal training, forest ignores them
+
+lstm (deeplog)
+last 10 events -> predict next one
+embedding 32, lstm 64, 2 layers, 5 epochs, lr 0.001
+train sample: 20000 blocks hdfs, 5000 windows bgl
+anomaly if real next event not in top k (5, 9, 15), at least m misses (1, 2, 5, 10)
+hdfs: f1 0.635 +- 0.032, auc 0.812 (val picked top5 1+ miss)
+top15 gives 0.699 on test but val didnt pick it, so not using it
+most hdfs anomalies have just 1 unexpected event
+misses blocks which just stop early
+bgl: f1 0.269 +- 0.004, auc 0.706
+bgl val f1 0.699 but test 0.269, test is further in time so more new events
+4046 of 8611 normal test windows have events never seen in training = 47%
+(analysis/bgl_unseen_events_check.py) -> log instability, LogRobust paper
+
+transformer (like logbert)
+chunks of 20 events, hide 15% and guess them from both sides
+embedding 64, 4 heads, 2 layers, 10 epochs, lr 0.001
+same train sample size as lstm
+testing: hide each event one by one, miss if real event not in top k
+hdfs: f1 0.811 +- 0.130, auc 0.923 (val picked top5 1+ miss)
+big std, one seed bad:
+seed 42 test 0.891 / val 0.988
+seed 7 test 0.881 / val 0.892
+seed 123 test 0.660 / val 0.595
+seed 123 had lowest train loss but worst result
+val shows same order as test, so can catch bad model before using
+best on val = seed 42, test f1 0.891 auc 0.999
+less stable than lstm
+bgl: f1 0.273 +- 0.000, auc 0.706, same as lstm
+hdfs model matters, bgl data change is the limit
+
+final
+IF: hdfs 0.477, bgl 0.198
+LSTM: hdfs 0.635, bgl 0.269
+Transformer: hdfs 0.811 (best seed 0.891), bgl 0.273
+
+curves (src/08_plot_curves.py)
+roc and pr curves for all 3 models, saved in results/hdfs_curves.png and bgl_curves.png
+pr curve more useful bcoz anomalies are rare
+
+speed (src/09_speed_test.py, laptop cpu)
+ms for 1 sequence / sequences per sec in batch
+hdfs: IF 4.67 / 77,651, LSTM 0.72 / 3,417, transformer 3.18 / 354
+bgl: IF 5.41 / 24,424, LSTM 2.32 / 473, transformer 15.39 / 40
+all fast enough for real time (slowest 15 ms)
+transformer ~10x slower than lstm in batch bcoz it hides each event one by one
+IF fastest in batch but worst accuracy
+lstm = good balance, transformer = best accuracy but costs more
+
+attention (src/10_attention_heatmap.py, hdfs seed 42)
+anomaly block 20 events: received x3, allocate, written, stored x3, delete x3, deleting x2
+position 19 real event = "Unexpected error trying to delete block, BlockInfo not found"
+model top guess = "Deleting block" (normal next step)
+model looked most at position 17 (deleting), 16 (delete invalidSet), 18 (deleting)
+so it learned the normal delete pattern from both sides and flagged the error
+careful: attention = where model looked, not exactly why it decided
+good example to give to the llm later
+
+llm part
+ollama installed (local, logs stay private), version 0.40.9
+model llama3.2:3b downloaded (2 GB)
+explain flagged hdfs blocks without and with rag (src/11 to src/14)
+30 blocks rated, rag total 2.90 vs no rag 2.43 (out of 8)
+rag better on real anomalies (3.58 vs 2.58) but worse on normal blocks (0.17 vs 1.83)
+full details in notes/llm_notes.txt
+
+problems
+sklearn blocked by windows, reinstall fixed
+pandas 3.1.0 blocked by smart app control, pip.exe also blocked
+python -m pip works, pandas 2.2.3 works, kept smart app control on
+moved to new folders + renamed files, reran, same numbers
+torch nested tensor warning, ignore
+
+versions
+pandas 2.2.3, numpy 2.5.4, scikit-learn 1.9.1, torch 2.14.0 cpu, drain3 0.9.11, python 3.13
+
+todo
+llm prompt test on 12 blocks (allow "looks normal")
+check hdfs test false alarms (unfinished blocks at end?)
+check bgl template split
+final report, github, video

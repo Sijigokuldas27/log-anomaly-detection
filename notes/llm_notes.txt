@@ -1,0 +1,98 @@
+llm notes
+
+setup
+ollama, model llama3.2:3b, runs local so logs dont leave the laptop
+openai style api, temperature 0
+answer in json: summary, likely_cause, severity, next_step
+prompt says dont add anything not in the logs
+script: src/11_llm_explain.py
+
+rag
+knowledge base = rag/hdfs_runbook.txt, 14 short notes (normal write, normal delete,
+delete error, write pipeline failure, replication problems, etc)
+search with tf-idf, top 3 notes go before the logs in the prompt
+tf-idf is ok bcoz runbook is small and logs use same words as notes
+embeddings would be next step for bigger knowledge base
+
+first test (delete error block, same as attention example)
+about 20 sec per answer
+
+without rag:
+summary: Block deletion failed due to block not found in volumeMap
+likely_cause: BlockInfo not found in volumeMap during deletion
+severity: high
+next_step: Check the volumeMap for the block <BLK> and ensure it exists
+-> partly correct. reads logs ok but just repeats the error msg, no real cause,
+   severity too high, next step vague (has <BLK>)
+
+with rag (notes found: normal block delete, normal block write, delete error):
+summary: same
+likely_cause: The block was not fully written to the datanode before deletion
+severity: high
+next_step: Check if the block was deleted twice or if the earlier write to this datanode failed
+-> partly correct but better. real reason + good next step
+   but picked wrong reason: lines 11-13 show block was stored on all 3 machines
+   and there are 3 invalidSet but 4 delete attempts (17,18,19,20) -> delete came twice,
+   that is the other reason in the runbook
+   severity still high even though runbook says usually low -> small model ignores part of context
+
+how i rated
+one label hides the difference, so each field gets 0 wrong / 1 partly / 2 correct
+score out of 8 per answer. overall: 7-8 correct, 3-6 partly, 0-2 wrong
+30 blocks flagged by transformer: 24 real anomalies + 6 false alarms (real label normal)
+only one block per same event pattern, max 60 events
+src/12_llm_rating_sheet.py makes the sheet, about 18 sec per answer
+no rag and rag answer put as A and B in random order, key is in a separate file
+so i dont know which one is rag while rating
+src/13_rate_answers.py to rate in terminal, src/14_compare_rag.py to open the key and compare
+
+results (30 blocks, 60 answers)
+                no rag   rag
+summary          0.90    0.70
+cause            0.47    0.70
+severity         0.40    0.53
+next step        0.67    0.97
+total (of 8)     2.43    2.90
+
+correct/partly/wrong   no rag 2/11/17   rag 3/13/14
+rag better on 15 blocks, no rag better on 9, same on 6
+
+real anomaly blocks   no rag 2.58   rag 3.58
+normal blocks         no rag 1.83   rag 0.17
+
+severity said         high  medium  low
+no rag                 26     1      3
+rag                    11    17      2
+
+what i saw
+- rag helps cause and next step, the runbook gives it real things to check
+- rag summary is little worse, sometimes copies runbook words that dont fit the block
+- without rag it says high almost every time (26 of 30). rag is more medium but almost never low
+- when logs have clear error msg (socket timeout, connection reset, replication timed out)
+  both answers are good. blocks 11, 27, 30 got 7 of 8
+- when problem is small or there is no problem, it makes up a failure:
+  empty packet blocks -> says pipeline failed, but block was stored on 3 and verified
+  redundant report / extra copy removed -> says replication failed or delete failed
+  sometimes says verification failed when the log says verification succeeded
+- normal blocks: rag is much worse (0.17). the runbook notes are about failures,
+  so it finds one even when there is none
+- prompt says "our model said this block is an anomaly" -> llm believes it and never says
+  the block looks fine. this is a big reason for wrong answers on normal blocks
+- very short block (only allocate + 1 receiving): it cant see missing steps, only reads what is there,
+  so it guesses wrong
+- delete error type (blocks 13, 20, 28) gives almost same answer every time, so temperature 0 is stable
+- sometimes answer contradicts itself (replication failed, but block was replicated)
+- many hdfs blocks labeled anomaly look harmless in the logs (empty packet, redundant report).
+  so part of the problem is the label, not only the llm
+
+limits
+only 30 blocks, only 6 normal, so normal number is not strong
+only one person rated (me)
+not fully blind: rag answers sometimes use runbook words so i could guess which one is rag
+small 3b model, bigger model may do better
+
+next
+change prompt so llm can say "this looks normal" and dont say our model is sure
+split runbook notes so each note is one situation (delete error has 2 reasons in one note)
+move "empty packet" out of write pipeline failure note, it is usually not a failure
+run again on same 30 blocks and compare with this

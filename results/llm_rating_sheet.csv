@@ -1,0 +1,579 @@
+﻿id,block_id,real_label,log_events,A_summary,A_cause,A_severity,A_next_step,B_summary,B_cause,B_severity,B_next_step,A_summary_score,A_cause_score,A_severity_score,A_next_step_score,A_overall,B_summary_score,B_cause_score,B_severity_score,B_next_step_score,B_overall,comment
+1,blk_7875223702196072527,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. writeBlock <BLK> received exception java.io.IOException: Could not read from stream",Block allocation and receiving process failed due to an IOException,Failed to read from stream during block receiving,high,Check the block receiving process for any issues with the stream,Write pipeline failure for block <BLK> due to exception during write to datanode pipeline,"Network timeout, disk problem, or failure of next datanode in pipeline",medium,"Check datanode logs and disk, network between datanodes, and count addStoredBlock lines to verify block copies",1,1,1,1,partly,2,1,2,2,correct,"A repeats error msg, B better. no addStoredBlock so block never stored"
+2,blk_2735204420813474626,anomaly,"1. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. Receiving empty packet for block <BLK>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Receiving empty packet for block <BLK>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. Receiving empty packet for block <BLK>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+17. Verification succeeded for <BLK>","Block write pipeline failed with multiple datanode failures, but verification succeeded","Multiple datanode failures in the write pipeline, possibly due to network or disk issues",medium,"Check datanode logs and disk for errors, and verify network connectivity between datanodes","Block received multiple empty packets, but verification succeeded",Possible network issue or packet loss during transmission,low,Check network connectivity and packet loss between the source and destination IPs,0,0,1,1,wrong,2,1,2,1,partly,"block stored fine on 3 machines and verified, only empty packets. A says failure = wrong"
+3,blk_-4248803102717955451,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+15. Verification succeeded for <BLK>
+16. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+17. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+18. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+19. Deleting block <BLK> file <*>
+20. Deleting block <BLK> file <*>
+21. Deleting block <BLK> file <*>","Block was allocated, received, and added to stored blocks, but a redundant addStoredBlock request was received, indicating a potential issue with block management.",Redundant addStoredBlock request received for block <BLK> on <IP> size <NUM>.,high,Check the block's metadata and the datanode's logs to determine why the redundant addStoredBlock request was received.,Block allocation and deletion sequence indicates a potential data corruption issue,Repeated allocation and deletion of the same block on the same IP address may indicate a data corruption issue,high,Check the block's contents for corruption or inconsistencies,2,1,0,1,partly,0,0,0,0,wrong,"normal write + delete, only redundant report. B invents corruption, both say high"
+4,blk_-8338611834813524437,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. Receiving empty packet for block <BLK>
+6. Receiving empty packet for block <BLK>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. Receiving empty packet for block <BLK>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>",Block write pipeline failed with multiple datanode failures,"Multiple datanodes in the pipeline failed, causing the block to not get all its copies",medium,"Check datanode logs and disk for errors, and count addStoredBlock lines to verify block copies",Block allocation and receiving process failed with repeated empty packets,Repeated empty packets from the client indicate a connection issue or packet loss,high,Check the network connection and packet loss between the client and the HDFS server,0,0,1,1,wrong,1,1,0,1,partly,"same as block 2, empty packets but 3 copies stored. both say failed"
+5,blk_9051753517702758748,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. Verification succeeded for <BLK>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>","Block received multiple times from the same IP, but verification succeeded",Duplicate block received due to misconfigured packet responder,medium,Check the packet responder configuration to ensure it is correctly configured to handle duplicate blocks,"Block received multiple times with different packet responders, indicating a potential issue with the block allocation process.","Multiple clients trying to write to the same block simultaneously, causing the block to be allocated multiple times.",high,Check the client logs to see if multiple clients are trying to write to the same block.,0,0,1,0,wrong,0,0,0,0,wrong,"normal block (false alarm), both invent a problem. only 3rd addStoredBlock after verification"
+6,blk_4360806776287680334,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+15. Verification succeeded for <BLK>",Block allocation and verification process failed due to redundant addStoredBlock request,Redundant addStoredBlock request from IP,high,Check the IP that sent the redundant request and verify its connection to the NameNode,"Block was reported as redundant and removed from neededReplications, but verification succeeded, indicating a potential file deletion issue during writing.",File deletion during writing or replication,medium,Check if the file was deleted during writing,0,1,0,1,wrong,1,0,1,0,wrong,"normal write, only redundant report, verified. A says failed, B talks about deletion not in logs"
+7,blk_2949889663508022394,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. Receiving empty packet for block <BLK>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Receiving empty packet for block <BLK>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. Receiving empty packet for block <BLK>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+17. Verification succeeded for <BLK>
+18. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+19. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+20. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+21. Deleting block <BLK> file <*>
+22. Deleting block <BLK> file <*>
+23. Deleting block <BLK> file <*>","Block was received multiple times with empty packets, indicating a potential network issue or misconfigured client.",Network issue or misconfigured client sending empty packets to HDFS.,high,Check network connectivity and verify client configuration for sending data to HDFS.,"Block was allocated, received multiple copies, and then deleted, but verification failed","Verification failed after multiple copies were received, indicating a problem with the block",high,Check the block's checksum and verify that it matches the expected value,1,1,0,1,partly,0,0,0,0,wrong,"empty packets, stored on 3, verified, then normal delete. B says verification failed but it succeeded"
+8,blk_7890934627526492997,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+8. PacketResponder <NUM> for block <BLK> <*>
+9. Received block <BLK> of size <NUM> from <IP>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. Received block <BLK> of size <NUM> from <IP>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+15. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+16. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+17. Deleting block <BLK> file <*>
+18. Deleting block <BLK> file <*>
+19. Unexpected error trying to delete block <BLK>. BlockInfo not found in volumeMap.
+20. Deleting block <BLK> file <*>",Block deletion failed due to missing BlockInfo in volumeMap,BlockInfo not found in volumeMap during block deletion,high,Check the volumeMap for the specified block <BLK> to ensure it exists,Block deletion failed due to block not found in volumeMap,The block was not fully written to the datanode before deletion,high,Check if the block was deleted twice or if the earlier write to this datanode failed,1,1,0,1,partly,1,1,0,2,partly,"one delete failed, other copies deleted fine. B next step good but cause doesnt fit"
+9,blk_-2241803346833790029,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. <IP> Starting thread to transfer block <BLK> to <IP>
+15. Receiving block <BLK> src: <IP> dest: <IP>
+16. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+17. <IP>:Transmitted block <BLK> to <IP>
+18. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. Deleting block <BLK> file <*>
+22. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+23. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+24. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+25. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+26. Deleting block <BLK> file <*>
+27. Deleting block <BLK> file <*>
+28. Deleting block <BLK> file <*>","Multiple redundant block reports received for the same block, indicating a potential issue with block replication or deletion.",Redundant or late block report due to incomplete or incorrect block replication or deletion,medium,Check if the file was deleted during writing or if there are any issues with block replication,"Block was allocated, replicated, and then deleted, but the delete operation was not successful",The datanode was unable to delete the block file,high,Check the datanode logs for errors related to deleting the block file,1,1,2,1,partly,0,0,0,0,wrong,"missing 3rd copy was replicated ok, then normal delete. B says delete failed but no error"
+10,blk_-1539454651111893159,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. <IP> Starting thread to transfer block <BLK> to <IP>
+16. Receiving block <BLK> src: <IP> dest: <IP>
+17. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+18. <IP>:Transmitted block <BLK> to <IP>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. Deleting block <BLK> file <*>
+21. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+22. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+23. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+24. Deleting block <BLK> file <*>
+25. Deleting block <BLK> file <*>
+26. Deleting block <BLK> file <*>","Block was allocated, received multiple copies, and then deleted, but the delete operation was repeated multiple times",Repeated delete operation on the same block,high,Check the delete operation to ensure it was not triggered by a client or another process,"Block was allocated, received, and replicated, but then deleted without being fully transferred to datanodes.",Block was deleted before being fully transferred to datanodes.,high,Check the datanode logs to see if the block was transferred successfully before deletion.,1,1,0,1,partly,0,0,0,0,wrong,"extra copy made ok and removed, then normal delete. B says transfer not finished but it was"
+11,blk_-2667098508999319871,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. PacketResponder <BLK> <NUM> Exception <*>
+7. writeBlock <BLK> received exception java.net.SocketTimeoutException: <NUM> millis timeout while waiting for channel to be ready for <*> ch : java.nio.channels.SocketChannel[connected local=<IP> remote=<IP>]
+8. Exception in receiveBlock for block <BLK> <*>
+9. writeBlock <BLK> received exception <*>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. PacketResponder <NUM> for block <BLK> <*>
+12. Exception in receiveBlock for block <BLK> java.io.IOException: Connection reset by peer
+13. writeBlock <BLK> received exception java.io.IOException: Connection reset by peer",Block write failed due to network timeout or datanode failure,Network timeout or datanode failure in the pipeline,medium,"Check datanode logs, disk, and network between datanodes",Block failed to receive data due to socket timeout and subsequent connection reset,Socket timeout and connection reset by peer,high,Check the network connectivity between the HDFS nodes and the client,2,1,2,2,correct,2,1,2,2,correct,"real write failure, timeout + connection reset, never stored. both good"
+12,blk_-8031272994624626866,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. <IP> Starting thread to transfer block <BLK> to <IP>
+15. Receiving block <BLK> src: <IP> dest: <IP>
+16. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+17. <IP>:Transmitted block <BLK> to <IP>
+18. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>","Block replication transfer failed, leaving the block under-replicated",Failed to transfer block to target datanode,medium,"Check the target datanode health and network, and if replication was tried again","Block replication failed, but block was successfully stored and replicated to another node","Block replication failed, but block was successfully stored and replicated to another node",high,Check the replication factor and the number of attempts made by the datanode,0,0,0,0,wrong,1,0,0,1,wrong,"normal block, 3rd copy made and stored fine. A says transfer failed, B contradicts itself and says high"
+13,blk_-4888398266379412236,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. PacketResponder <NUM> for block <BLK> <*>
+9. Received block <BLK> of size <NUM> from <IP>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. Received block <BLK> of size <NUM> from <IP>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. <IP> Starting thread to transfer block <BLK> to <IP>
+16. Receiving block <BLK> src: <IP> dest: <IP>
+17. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+18. <IP>:Transmitted block <BLK> to <IP>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. Deleting block <BLK> file <*>
+21. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+22. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+23. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+24. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+25. Deleting block <BLK> file <*>
+26. Deleting block <BLK> file <*>
+27. Unexpected error trying to delete block <BLK>. BlockInfo not found in volumeMap.
+28. Deleting block <BLK> file <*>",Block deletion failed due to BlockInfo not found in volumeMap,"The block was not fully written to the datanode before deletion, or the delete request came twice",high,"Check if the same block was deleted twice, if the earlier write to this datanode failed, and if the datanode disk (volume) is ok","Block was allocated, replicated, and then deleted, but an error occurred while trying to delete it",BlockInfo not found in volumeMap during deletion,high,Check the volumeMap for the block and ensure it is correctly updated,1,2,0,2,partly,2,1,0,1,partly,"extra copy made, then file deleted, one delete error. A cause and next step good, both say high"
+14,blk_-949894797024274980,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. Receiving empty packet for block <BLK>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Receiving empty packet for block <BLK>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. Receiving empty packet for block <BLK>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+17. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+18. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+19. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+20. Deleting block <BLK> file <*>
+21. Deleting block <BLK> file <*>
+22. Deleting block <BLK> file <*>","Block write pipeline failed with empty packet received, indicating a datanode issue or network problem.",Datanode issue or network problem in the pipeline,medium,"Check datanode logs and disk for errors, and verify network connectivity between datanodes","Block was marked as invalid and deleted, but received multiple blocks with different sizes",Block was marked as invalid due to receiving multiple blocks with different sizes,high,Check the block's metadata and the block's history to understand why it was marked as invalid,1,1,0,1,partly,0,0,0,0,wrong,"empty packets, stored on 3, normal delete. A says pipeline failed, B invents different sizes"
+15,blk_-7130808271179983454,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>","Block write process incomplete, with missing addStoredBlock and PacketResponder steps",Block was allocated but some normal steps (addStoredBlock and PacketResponder) were missing or terminated early,medium,Check if the file was completed and how many copies the block has now,"Block allocation and receiving process was repeated multiple times, with a redundant addStoredBlock request at the end.","Repeated block allocation and receiving process, followed by a redundant addStoredBlock request.",high,Check the NameNode's block allocation and receiving process for any issues or configuration problems.,0,0,0,1,wrong,1,0,0,0,wrong,"stored on 3, only one redundant report at end. A says steps missing, B says repeated, both wrong"
+16,blk_2500740688069535063,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. Receiving empty packet for block <BLK>
+6. <IP> Starting thread to transfer block <BLK> to <IP>
+7. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+8. Receiving block <BLK> src: <IP> dest: <IP>
+9. Receiving empty packet for block <BLK>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. Received block <BLK> of size <NUM> from <IP>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. Receiving empty packet for block <BLK>
+15. PacketResponder <NUM> for block <BLK> <*>
+16. Received block <BLK> of size <NUM> from <IP>
+17. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+18. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+21. <IP>:Transmitted block <BLK> to <IP>
+22. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+23. Deleting block <BLK> file <*>",Block write pipeline failed with receiving empty packet for block,Network issue or datanode failure caused the block write pipeline to fail,medium,"Check datanode logs and disk for errors, and verify network connectivity between datanodes",Block transfer failed due to repeated empty packets and incomplete data transfer.,Repeated empty packets from the source IP caused the block transfer to fail.,high,Check the network connectivity and packet loss between the source and destination IPs.,1,1,0,1,partly,1,0,0,1,wrong,"empty packets, stored on 3, extra copy sent fine. both say failed, B says high"
+17,blk_4596525681454440771,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+16. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+17. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+18. Deleting block <BLK> file <*>
+19. Deleting block <BLK> file <*>
+20. Deleting block <BLK> file <*>","Block was marked as invalid and deleted, but multiple attempts were made to add it to the block map",Repeated attempts to add a block to the block map despite it being marked as invalid,high,Check the block map and invalidSet for any other entries with the same block ID,"Block report redundancy and deletion, but no clear indication of what happened to the block",Redundant addStoredBlock request received for <BLK> on <IP> size <NUM> after multiple writes and deletions,low,Check if the file was deleted during writing,0,0,0,0,wrong,1,1,2,2,partly,"stored on 3, one redundant report, normal delete. A invents wrong order, B says low and admits not clear"
+18,blk_-71984290434357201,anomaly,"1. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. <IP> Starting thread to transfer block <BLK> to <IP>
+14. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+15. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+17. <IP>:Transmitted block <BLK> to <IP>
+18. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+19. Receiving block <BLK> src: <IP> dest: <IP>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. Deleting block <BLK> file <*>","Block was transferred to a datanode, but then deleted without being replicated to other nodes",Datanode deletion without replication,high,Check the datanode logs to see if it was properly replicated,"Block was reported as redundant and then deleted, indicating a possible file deletion during writing or replication",File deletion during writing or replication,medium,Check if the file was deleted during writing,0,0,0,1,wrong,1,1,0,1,partly,"replication worked, one redundant report, one extra copy removed. A says not replicated, B guesses file deleted"
+19,blk_6195026979817815965,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. PacketResponder <NUM> for block <BLK> <*>
+3. Received block <BLK> of size <NUM> from <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. Receiving block <BLK> src: <IP> dest: <IP>
+8. PacketResponder <NUM> for block <BLK> <*>
+9. Received block <BLK> of size <NUM> from <IP>
+10. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+15. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+16. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+17. Deleting block <BLK> file <*>
+18. Deleting block <BLK> file <*>
+19. Deleting block <BLK> file <*>","Block <BLK> was marked as invalid and deleted, but received multiple packets from the same IP, indicating a potential issue with the block's validity or replication.",Invalid block marked for deletion due to repeated packets from the same IP.,high,Check the block's replication status and verify that it was correctly marked as invalid and deleted.,"Block was allocated, received, and then deleted, but the delete operation was repeated multiple times",Repeated delete operation on the same block,high,Check the client that wrote the block to ensure it was properly closed and deleted,0,0,0,0,wrong,1,0,0,0,wrong,"normal write and normal delete on 3 copies. A invents repeated packets, B thinks 3 deletes is a repeat"
+20,blk_8704470484017517454,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: Redundant addStoredBlock request received for <BLK> on <IP> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+16. <IP> Starting thread to transfer block <BLK> to <IP>
+17. Receiving block <BLK> src: <IP> dest: <IP>
+18. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+19. <IP>:Transmitted block <BLK> to <IP>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+22. Deleting block <BLK> file <*>
+23. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+24. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+25. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+26. Deleting block <BLK> file <*>
+27. Deleting block <BLK> file <*>
+28. Deleting block <BLK> file <*>
+29. Unexpected error trying to delete block <BLK>. BlockInfo not found in volumeMap.",Block deletion failed due to BlockInfo not found in volumeMap,"The block was not fully written to the datanode before deletion, or the block was deleted twice",high,"Check if the block was deleted twice, if the earlier write to this datanode failed, and if the datanode disk (volume) is ok","Block was allocated, replicated, and then deleted, but an error occurred during deletion.",BlockInfo not found in volumeMap during deletion.,high,Check the volumeMap for the block and ensure it is correctly updated.,1,2,0,2,partly,2,1,0,1,partly,"same as block 13, extra copy then delete, last delete error. A cause and next step good, both say high"
+21,blk_4437281228822195961,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. <IP> Starting thread to transfer block <BLK> to <IP>
+15. Receiving block <BLK> src: <IP> dest: <IP>
+16. <IP>:Transmitted block <BLK> to <IP>
+17. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+18. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. Deleting block <BLK> file <*>
+22. Verification succeeded for <BLK>","Block replication failed, causing under-replication",Failed to transfer block to target datanode,medium,Check target datanode health and network,"Block replication failed, but block was successfully added to the map and deleted, indicating a possible replication issue","Block replication failed, but block was successfully added to the map and deleted, indicating a possible replication issue",high,Check the replication factor and the number of replicas for the block,0,0,0,0,wrong,1,0,0,1,wrong,"same as block 12, replication worked and verification succeeded. A says failed, B contradicts itself"
+22,blk_9173199815015538212,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. PacketResponder <NUM> for block <BLK> <*>
+4. Received block <BLK> of size <NUM> from <IP>
+5. Receiving block <BLK> src: <IP> dest: <IP>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Receiving block <BLK> src: <IP> dest: <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: addStoredBlock request received for <BLK> on <IP> size <NUM> But it does not belong to any file.
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: addStoredBlock request received for <BLK> on <IP> size <NUM> But it does not belong to any file.
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. Deleting block <BLK> file <*>
+16. BLOCK* NameSystem.addStoredBlock: addStoredBlock request received for <BLK> on <IP> size <NUM> But it does not belong to any file.
+17. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+18. Deleting block <BLK> file <*>
+19. Deleting block <BLK> file <*>","Block was repeatedly allocated and updated without being assigned to a file, leading to its deletion",Repeated allocation and update of a block without assignment to a file,high,Check the NameNode's block allocation and update logs to identify the specific block and IP address involved,"Block was reported as redundant or late, but subsequent reports and deletion attempts failed to remove it","Repeated attempts to add a block that doesn't belong to any file to the block map, indicating a potential issue with file deletion or block allocation",high,Check if the file was deleted during writing or if there are any other issues with block allocation,1,1,0,1,partly,1,2,0,2,partly,"file deleted while writing, orphan copies cleaned up. B cause and next step right, both say high"
+23,blk_6463083540789274628,anomaly,"1. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+2. Receiving block <BLK> src: <IP> dest: <IP>","Block allocation failed, but block received","Block allocation failed, but block received from a different IP",high,Check the IP addresses of the source and destination,"Block allocation failed, but block verification succeeded","NameNode failed to allocate block, but block was successfully received and verified",low,Check NameNode logs for allocation failure,0,0,1,0,wrong,0,0,1,0,wrong,"only 2 events, write stopped early, nothing stored. both say allocation failed, B invents verification"
+24,blk_-4254182920228791780,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. PacketResponder <NUM> for block <BLK> <*>
+4. Received block <BLK> of size <NUM> from <IP>
+5. Receiving block <BLK> src: <IP> dest: <IP>
+6. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+7. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+8. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. PacketResponder <NUM> for block <BLK> <*>
+12. Received block <BLK> of size <NUM> from <IP>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>","Block received multiple times from the same IP, but NameSystem didn't update its size",NameSystem didn't update its size after receiving the block,high,Check NameSystem logs for the block to see if it was updated correctly,"Block allocation and verification failed, but block deletion succeeded","Multiple block allocations and verifications failed, but block deletion was successful, indicating a possible issue with block allocation or verification",high,"Check the block allocation and verification process, including the number of allocations and verifications, and the status of the datanodes",0,0,0,0,wrong,0,0,0,0,wrong,"normal write stored on 3, order mixed by timing. A invents size not updated, B invents delete and verification"
+25,blk_61459942132581217,normal,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. <IP> Starting thread to transfer block <BLK> to <IP>
+15. Receiving block <BLK> src: <IP> dest: <IP>
+16. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+17. <IP>:Transmitted block <BLK> to <IP>
+18. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. Deleting block <BLK> file <*>","Block replication failed, leaving the block under-replicated",Failed to transfer block to target datanode,medium,"Check the target datanode health and network, and if replication was tried again","Block was allocated, replicated, and then deleted",Block was deleted after being allocated and replicated,low,Check if the block was deleted due to a manual operation or a configuration issue,0,0,0,0,wrong,2,1,2,1,partly,"same as block 21, replication worked, extra copy removed. A says failed, B mostly right and says low"
+26,blk_6336460554009766891,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP> <IP>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. PacketResponder <NUM> for block <BLK> <*>
+9. Received block <BLK> of size <NUM> from <IP>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. Received block <BLK> of size <NUM> from <IP>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. <IP> Starting thread to transfer block <BLK> to <IP>, <IP>
+16. Receiving block <BLK> src: <IP> dest: <IP>
+17. Receiving block <BLK> src: <IP> dest: <IP>
+18. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+19. <IP>:Transmitted block <BLK> to <IP>
+20. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+21. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+22. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+23. Deleting block <BLK> file <*>
+24. Deleting block <BLK> file <*>","Block replication transfer failed, leaving the block under-replicated","Failed to transfer block to target datanode, causing the block to stay under-replicated",medium,"Check the target datanode health and network, and if replication was tried again","Block was successfully replicated and added to the block map, but then deleted without being written to the file system.",Block was deleted before being written to the file system.,high,Check the block map and file system logs to confirm the block was deleted and not just moved or removed temporarily.,0,0,0,0,wrong,1,0,0,0,wrong,"stored on 3, 2 extra copies sent fine then removed. A says failed, B invents not written"
+27,blk_6821228329171782981,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+15. <IP> Starting thread to transfer block <BLK> to <IP>
+16. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+17. PendingReplicationMonitor timed out block <BLK>",Block replication timed out after multiple attempts to replicate to datanode(s),Block replication attempt timed out due to lack of successful replication attempts,high,Check the replication factor and number of attempts configured for this block,"Block replication failed, leaving the block under-replicated",Failed to transfer block to target datanode,medium,"Check the target datanode health and network, and if replication was tried again",2,1,1,1,partly,1,1,2,2,partly,"real replication timeout, block still has 3 copies. A names timeout, B better next step and severity"
+28,blk_-5902826556389637287,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. Receiving empty packet for block <BLK>
+6. PacketResponder <NUM> for block <BLK> <*>
+7. Received block <BLK> of size <NUM> from <IP>
+8. Receiving empty packet for block <BLK>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. Receiving empty packet for block <BLK>
+12. PacketResponder <NUM> for block <BLK> <*>
+13. Received block <BLK> of size <NUM> from <IP>
+14. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+16. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+17. <IP> Starting thread to transfer block <BLK> to <IP>
+18. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+19. Receiving block <BLK> src: <IP> dest: <IP>
+20. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+21. <IP>:Transmitted block <BLK> to <IP>
+22. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+23. Deleting block <BLK> file <*>
+24. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+25. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+26. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+27. BLOCK* NameSystem.delete: <BLK> is added to invalidSet of <IP>
+28. Deleting block <BLK> file <*>
+29. Unexpected error trying to delete block <BLK>. BlockInfo not found in volumeMap.
+30. Deleting block <BLK> file <*>
+31. Deleting block <BLK> file <*>","Block was allocated, received, and replicated, but then deleted without being fully removed from the volume map, resulting in an error",Block was deleted without being fully removed from the volume map,high,Check the volume map for the block and ensure it is fully removed,Block deletion failed due to BlockInfo not found in volumeMap,"The block was not fully written to the datanode before deletion, or the block was deleted twice",high,"Check if the block was deleted twice, if the earlier write to this datanode failed, and if the datanode disk (volume) is ok",2,1,0,1,partly,1,2,0,2,partly,"same type as 13 and 20, extra copy then delete, one delete error. B cause and next step good, both say high"
+29,blk_-3280689676661036229,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+3. Receiving block <BLK> src: <IP> dest: <IP>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+10. PacketResponder <NUM> for block <BLK> <*>
+11. Received block <BLK> of size <NUM> from <IP>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+14. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+15. <IP> Starting thread to transfer block <BLK> to <IP>
+16. Receiving block <BLK> src: <IP> dest: <IP>
+17. Received block <BLK> src: <IP> dest: <IP> of size <NUM>
+18. <IP>:Transmitted block <BLK> to <IP>
+19. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+20. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+21. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+22. Deleting block <BLK> file <*>","Block was replicated to multiple nodes, but then deleted without being fully transferred",Block was deleted before being fully transferred to all nodes,high,Check the block's replication status and verify that it was not fully transferred to all nodes,"Block replication transfer failed, leaving the block under-replicated",Failed to transfer block to target datanode,medium,"Check the target datanode health and network, and if replication was tried again",1,0,0,0,wrong,0,0,0,0,wrong,"same as 26, extra copy sent fine then removed. A says not fully transferred, B says failed"
+30,blk_7200427090678309568,anomaly,"1. Receiving block <BLK> src: <IP> dest: <IP>
+2. Receiving block <BLK> src: <IP> dest: <IP>
+3. BLOCK* NameSystem.allocateBlock: <*> <BLK>
+4. Receiving block <BLK> src: <IP> dest: <IP>
+5. PacketResponder <NUM> for block <BLK> <*>
+6. Received block <BLK> of size <NUM> from <IP>
+7. PacketResponder <NUM> for block <BLK> <*>
+8. Received block <BLK> of size <NUM> from <IP>
+9. PacketResponder <NUM> for block <BLK> <*>
+10. Received block <BLK> of size <NUM> from <IP>
+11. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+12. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>
+13. BLOCK* ask <IP> to replicate <BLK> to datanode(s) <IP>
+14. <IP> Starting thread to transfer block <BLK> to <IP>
+15. BLOCK* NameSystem.addStoredBlock: blockMap updated: <IP> is added to <BLK> size <NUM>","Block replication failed, leading to under-replication",Failed to transfer block to target datanode,medium,"Check target datanode health and network, and if replication was tried again","Block allocation and replication process initiated, but no data transfer occurred","Block allocation and replication process initiated, but no data transfer occurred",low,Check if the datanode is running and if the block is being replicated to it,1,2,2,2,correct,2,1,2,2,correct,"transfer started but never finished, block still has 3 copies. both good"
