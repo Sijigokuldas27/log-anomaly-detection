@@ -1,0 +1,25 @@
+﻿id,real_label,method,looks_normal,summary,severity,right
+5,normal,no_rag,yes,Block received and stored successfully,none,True
+5,normal,rag,yes,Normal block write and verification process,none,True
+12,normal,no_rag,yes,"Block received and stored, replicated to multiple nodes",none,True
+12,normal,rag,yes,Normal block write and replication process,none,True
+19,normal,no_rag,yes,"Block <BLK> was written, stored, and deleted normally",none,True
+19,normal,rag,yes,Normal block write and deletion process,none,True
+21,normal,no_rag,yes,"Block received, stored, replicated, and deleted successfully",none,True
+21,normal,rag,yes,Normal block write and replication process,none,True
+24,normal,no_rag,yes,Block received and stored successfully,none,True
+24,normal,rag,yes,Normal block write and verification process,none,True
+25,normal,no_rag,yes,"Block received and stored, then replicated to other nodes, and finally deleted",none,True
+25,normal,rag,yes,Normal block write and replication process,none,True
+27,anomaly,no_rag,yes,"Block received and stored, but replication timed out",low,False
+27,anomaly,rag,yes,Normal block write and replication process,none,False
+4,anomaly,no_rag,yes,"Multiple receiving blocks and successful block transfers, followed by repeated empty packets and successful retransmissions.",low,False
+4,anomaly,rag,yes,Normal block write and verification process,none,False
+1,anomaly,no_rag,no,Block allocation and receiving failed with exception,high,True
+1,anomaly,rag,no,Write pipeline failure for block <BLK> with exception java.io.IOException: Could not read from stream,medium,True
+10,anomaly,no_rag,yes,"Block was written, stored, replicated, and deleted normally",none,False
+10,anomaly,rag,yes,Normal block write and deletion process,none,False
+9,anomaly,no_rag,yes,"Block received, stored, replicated, and deleted normally",none,False
+9,anomaly,rag,yes,"Multiple blocks were written and stored successfully, but a redundant addStoredBlock request was received for one of the blocks.",low,False
+26,anomaly,no_rag,yes,"Block received and stored successfully, then replicated to multiple nodes",none,False
+26,anomaly,rag,yes,Normal block write and replication process,none,False

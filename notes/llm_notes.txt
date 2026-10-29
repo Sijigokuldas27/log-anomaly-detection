@@ -91,8 +91,26 @@ only one person rated (me)
 not fully blind: rag answers sometimes use runbook words so i could guess which one is rag
 small 3b model, bigger model may do better
 
-next
-change prompt so llm can say "this looks normal" and dont say our model is sure
+prompt test (src/15_llm_prompt_test.py)
+new prompt: detector can be wrong, first say looks_normal yes or no
+tested on 12 rated blocks: all 6 normal + 6 random anomalies, without and with rag
+took around 45 min (much slower than before, around 2 min per answer)
+model sometimes gave true/false instead of yes/no, fixed in the script
+
+                 normal said normal   anomaly said problem
+no rag                6 of 6                1 of 6
+rag                   6 of 6                1 of 6
+
+- normal blocks fixed completely, before it made up failures on them
+- but now it says almost everything is normal, only caught block 1 (clear exception msg)
+- block 27 is real replication timeout, it even wrote "replication timed out" in the summary
+  and still said looks normal
+- severity mostly "none" now (19 of 24)
+- so the 3b model mostly follows what the prompt says, not what the logs show
+  old prompt -> finds problem everywhere, new prompt -> finds problem nowhere
+- conclusion: llm should only explain, the detector should decide. dont use small llm as second detector
+
+next (if time)
 split runbook notes so each note is one situation (delete error has 2 reasons in one note)
 move "empty packet" out of write pipeline failure note, it is usually not a failure
-run again on same 30 blocks and compare with this
+try a bigger model to see if it really reads the logs
