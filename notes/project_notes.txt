@@ -34,7 +34,7 @@ hdfs counts very bad f1 0.014 ??
 test blocks shorter 15.4 vs 20.5 events (analysis/hdfs_block_length_check.py)
 ratio features fixed it
 hdfs: f1 0.477 +- 0.000, auc 0.868 (val also picked ratio)
-around 2676 false alarms on hdfs test, comes in every setting
+around 2676 false alarms on hdfs test, comes in every setting (see false alarm check below)
 hdfs all data: f1 0.521, auc 0.943, but val f1 was 0.971, big gap
 bgl: f1 0.198 +- 0.007, auc 0.460 (first number 0.222 was too high, picked on test)
 bgl all data: f1 0.202, auc 0.493
@@ -98,12 +98,34 @@ so it learned the normal delete pattern from both sides and flagged the error
 careful: attention = where model looked, not exactly why it decided
 good example to give to the llm later
 
+hdfs false alarm check (analysis/hdfs_end_of_log_check.py)
+my guess: short test blocks = blocks not finished when log ended -> WRONG
+unfinished = never stored (no addStoredBlock line)
+0 of 113,334 normal test blocks are unfinished, all unfinished blocks are real anomalies
+end of log is not short, last parts have the longest blocks (18.9 events)
+short blocks are in the middle of test period (parts 2-6, around 13 events)
+leaving out unfinished blocks at the end makes f1 little worse, not better (they were real anomalies)
+transformer seed 42 caught all 1679 anomalies (recall 1.0), 409 false alarms
+
+where IF false alarms come from (2679):
+2167 of them (81%) are same pattern: received x3, stored x3, verified, no delete
+-> most normal block possible, nothing wrong
+this pattern is rare in train (3282 of ~400k), bcoz most train blocks also get deleted later
+in middle of test period system wrote and kept many files, less delete -> workload change
+IF only counts events, so missing delete step looks unusual to it
+all IF false alarms are in parts 1-7, none in 8-10
+77 have a pattern never seen in train (extra copy made, no delete)
+lstm and transformer dont have this problem: block just stops at a normal point,
+no unexpected next event, so no miss -> good reason why order models are better on hdfs
+
 llm part
 ollama installed (local, logs stay private), version 0.40.9
 model llama3.2:3b downloaded (2 GB)
 explain flagged hdfs blocks without and with rag (src/11 to src/14)
 30 blocks rated, rag total 2.90 vs no rag 2.43 (out of 8)
 rag better on real anomalies (3.58 vs 2.58) but worse on normal blocks (0.17 vs 1.83)
+prompt test (src/15): if prompt says detector can be wrong, llm says almost everything is normal
+(6 of 6 normal right, only 1 of 6 anomaly) -> small llm follows the prompt, not the logs
 full details in notes/llm_notes.txt
 
 problems
@@ -117,7 +139,6 @@ versions
 pandas 2.2.3, numpy 2.5.4, scikit-learn 1.9.1, torch 2.14.0 cpu, drain3 0.9.11, python 3.13
 
 todo
-llm prompt test on 12 blocks (allow "looks normal")
-check hdfs test false alarms (unfinished blocks at end?)
-check bgl template split
-final report, github, video 
+fix readme limitation (short blocks are workload change, not unfinished blocks)
+check bgl template split (if time)
+final report, video

@@ -70,11 +70,18 @@ python src/11_llm_explain.py
 python src/12_llm_rating_sheet.py
 python src/13_rate_answers.py
 python src/14_compare_rag.py
+python src/15_llm_prompt_test.py
 ```
 
-11 explains one example block without and with RAG. 12 explains 30 flagged blocks and makes the rating sheet, where the two answers are A and B in random order. 13 is for rating them by hand in the terminal, and 14 opens the key and compares the scores. Running 12 again makes new answers and a new empty sheet, so my rated sheet would be replaced.
+11 explains one example block without and with RAG. 12 explains 30 flagged blocks and makes the rating sheet, where the two answers are A and B in random order. 13 is for rating them by hand in the terminal, and 14 opens the key and compares the scores. Running 12 again makes new answers and a new empty sheet, so my rated sheet would be replaced. 15 tries a different prompt on 12 of the rated blocks.
 
-Results and figures go to `results/` and trained models to `models/`. The two scripts in `analysis/` are the checks I used to find why some results were bad.
+Results and figures go to `results/` and trained models to `models/`. The scripts in `analysis/` are the checks I used to find why some results were bad:
+
+```
+python analysis/hdfs_block_length_check.py
+python analysis/bgl_unseen_events_check.py
+python analysis/hdfs_end_of_log_check.py
+```
 
 ## Model settings
 
@@ -134,9 +141,13 @@ I rated 30 blocks flagged by the transformer (24 real anomalies and 6 false alar
 
 RAG was better on 15 blocks, worse on 9 and the same on 6. On real anomalies RAG got 3.58 and no RAG 2.58, but on normal blocks RAG got only 0.17 and no RAG 1.83. Without RAG the model said severity "high" for 26 of 30 blocks, with RAG it was mostly "medium".
 
+The prompt said "our model said this block is an anomaly", so I also tried a prompt that says the detector can be wrong and asks first if the block looks normal (12 of the rated blocks). Now it said normal for all 6 normal blocks, but also for 5 of 6 real anomalies, even for a replication timeout that it described itself in the summary. Both with and without RAG gave the same result.
+
 ## What I found
 
 On HDFS, isolation forest with raw counts was almost useless (F1 0.014). Test blocks are shorter than train blocks (15.4 vs 20.5 events), so I changed to ratio features and it went up to 0.477.
+
+I first thought the short test blocks were blocks not finished when the log ended, but that is not true. No normal test block is unfinished (every one is stored at least once), and the end of the log has the longest blocks. The short blocks are in the middle of the test period. 81% of the isolation forest false alarms (2167 of 2679) are the same simple pattern: the block is received and stored on 3 machines and verified, and nothing else. In training most blocks are also deleted later, so this pattern is rare there (3282 of around 400,000). The system just wrote and kept more files in that period. Isolation forest only counts events, so a missing delete step looks unusual to it. LSTM and transformer read the order, and the block just stops at a normal point, so they do not flag it.
 
 The transformer is clearly best on HDFS, I think because it uses events from both sides while LSTM only looks back. But it is less stable. One of 3 seeds was much worse (F1 0.660 vs around 0.89), and that seed had the lowest training loss, so low loss does not mean a good detector. Validation ranked the seeds in the same order as test, so a bad model can be caught before using it.
 
@@ -144,11 +155,11 @@ On BGL all models are weak and almost the same. 47% of the normal test windows h
 
 Picking settings on test makes results look better than real. My first BGL isolation forest number was 0.222, with validation it is 0.198.
 
-The LLM explains well when the logs have a clear error message, like a socket timeout or connection reset. When the problem is small or there is no problem, it often makes up a failure. RAG gives better causes and next steps on real anomalies, but on normal blocks it is worse, because the runbook notes are about failures. The prompt also says our model found an anomaly, so the LLM almost never says a block looks fine.
+The LLM explains well when the logs have a clear error message, like a socket timeout or connection reset. When the problem is small or there is no problem, it often makes up a failure. RAG gives better causes and next steps on real anomalies, but on normal blocks it is worse, because the runbook notes are about failures. The small model mostly follows what the prompt suggests: if the prompt says the block is an anomaly it finds a problem, and if it says the detector can be wrong it calls almost everything normal. So in my setup the LLM is useful to explain a flagged block, but the detector should make the decision.
 
 ## Limitations
 
-Only 3 seeds, and the transformer std on HDFS is big, so more seeds would be better. BGL gives 1127 templates and some may be the same message split into different templates. The HDFS test period has many short normal blocks, probably blocks that were not finished when the log ended, which I still need to check. Speed is from one laptop, so it will be different on other machines. The LLM rating has only 30 blocks (6 normal) and one rater (me), and it is not fully blind because RAG answers sometimes use words from the runbook. Pandas is fixed to 2.2.3 because newer versions were blocked by Windows Smart App Control on my laptop.
+Only 3 seeds, and the transformer std on HDFS is big, so more seeds would be better. BGL gives 1127 templates and some may be the same message split into different templates. Speed is from one laptop, so it will be different on other machines. The LLM rating has only 30 blocks (6 normal) and one rater (me), and it is not fully blind because RAG answers sometimes use words from the runbook. The prompt test has only 12 blocks. I only tried one small LLM (3B), a bigger model may read the logs better. Pandas is fixed to 2.2.3 because newer versions were blocked by Windows Smart App Control on my laptop.
 
 ## References
 
